@@ -19,36 +19,64 @@ args <- commandArgs(trailingOnly = TRUE)
 jump_threshold = 50
 
 if(length(args) == 0) {
-  print("Please specify a file")
+  print("Usage\nRscript dbh_remove_jumps.r source_data_file.csv jump_threshold")
 } else {
   if(length(args) == 2) {
     jump_threshold = strtoi(args[2])
   }
-  if(file.exists(args[1])) {
+  source_filename = args[1]
+  output_filename = "output.csv"
+  
+  if(file.exists(source_filename)) {
     current_diff_ch1 = 0
     current_diff_ch2 = 0
     
-    d_data = read.csv(args[1])
+    d_data = read.csv(source_filename)
 
-    print(paste("JT:", jump_threshold))
+    message("Starting Script")
+    message(paste("Source File: ", source_filename))
+    message(paste("Output File: ", output_filename))
+    message(paste("Jump Threshold: ", jump_threshold))
+    
+    output_data <- d_data
+    
+    output_data <- d_data[FALSE,]
+    
     
     # Loop through data
     for(i in 1:nrow(d_data)) {
       if(i == 1) {
-        last_d = d_data[i,4]
+        last_d_1 = d_data[i,4]
+        last_d_2 = d_data[i,5]
       }
       
-      if((d_data[i,4] - last_d) > jump_threshold) {
-        current_diff_ch1 = current_diff_ch1 + (d_data[i,4] - last_d)
+      if((d_data[i,4] - last_d_1) > jump_threshold) {
+        current_diff_ch1 = current_diff_ch1 + (d_data[i,4] - last_d_1)
+      }
+
+      if((d_data[i,5] - last_d_2) > jump_threshold) {
+        current_diff_ch2 = current_diff_ch2 + (d_data[i,5] - last_d_2)
       }
       
-      new_value = d_data[i, 4] - current_diff_ch1
+      new_value_1 = d_data[i, 4] - current_diff_ch1
+      new_value_2 = d_data[i, 5] - current_diff_ch2
       
-      print(paste(d_data[i, 4], ":",current_diff_ch1, new_value))
+      print(paste(d_data[i, 4], ":",current_diff_ch1, new_value_1))
+      print(paste(d_data[i, 5], ":",current_diff_ch2, new_value_2))
       
-      last_d = d_data[i,4]
+      output_data[i,1] = d_data[i,1]
+      output_data[i,2] = d_data[i,2]
+      output_data[i,3] = d_data[i,3]
+      output_data[i,4] = new_value_1
+      output_data[i,5] = new_value_2
+      
+      last_d_1 = d_data[i,4]
+      last_d_2 = d_data[i,5]
       
     }
+    
+    print(output_data)
+    
   } else {
     print("File does not exist!")
   }
