@@ -39,7 +39,7 @@ if(length(args) == 0) {
       }
       
       if((d_data[i,4] - last_d) > jump_threshold) {
-        current_diff_ch1 = d_data[i,4] - last_d
+        current_diff_ch1 = current_diff_ch1 + (d_data[i,4] - last_d)
       }
       
       new_value = d_data[i, 4] - current_diff_ch1
