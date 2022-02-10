@@ -14,6 +14,9 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# TODO:
+# Ensure falling values are also handled
+
 # Should be run from parent directory
 args <- commandArgs(trailingOnly = TRUE)
 jump_threshold = 50
@@ -62,6 +65,11 @@ if(length(args) == 0) {
       if((d_data[i,4] - last_d_1) > jump_threshold) {
         current_diff_ch1 = current_diff_ch1 + (d_data[i,4] - last_d_1)
       }
+      
+      if((last_d_1 - d_data[i,4]) > jump_threshold) {
+        current_diff_ch1 = current_diff_ch1 - (last_d_1 - d_data[i,4])
+      }
+
 
       if((d_data[i,5] - last_d_2) > jump_threshold) {
         current_diff_ch2 = current_diff_ch2 + (d_data[i,5] - last_d_2)
@@ -95,18 +103,22 @@ if(length(args) == 0) {
     
     
     if(channels == "1") {
-      png(filename = "dend_proc_1.png", width = 625, height = 400)
-      
-      plot(d_data$Channel_1, type="l",col="red",
-           main = "Raw Dendrometer Data Ch 1")
-      points(d_data$Channel_1, col="blue")
-      axis(4,col="red",ylim=c(0,max(d_data$Channel_1)), lwd=2)
-      
+      png(filename = "dend_proc_1.png", width = 725, height = 400)
+      par(mar=c(5, 12, 4, 4) + 0.1)
+      plot(d_data$Channel_1, axes=F, type="l",col="red",xlab="", ylab="",
+           main = paste(source_filename, "Channel 1 Raw"))
+
+      mtext(2,text="Channel 1",line=2)
+      axis(2, ylim=c(0,max(max(d_data$Channel_1)),col="red",lwd=2))
+
       par(new=T)
-      plot(output_data$Channel_1, type="l",col="blue")
-      points(output_data$Channel_1, col="blue")
+      plot(output_data$Channel_1, type="l",axes=F, xlab="", ylab="",
+           col="blue",)
       axis(4,col="blue",ylim=c(0,max(output_data$Channel_1)), lwd=2)
+      mtext(side=4,text="Channel 1 Processed",line=2)
       
+      legend("topleft", inset = 0.0, c("Unprocessed", "Processed"), 
+             lty = 1, col = c("red", "blue"))
       
     }
     
@@ -116,10 +128,11 @@ if(length(args) == 0) {
            main = "Raw Dendrometer Data Ch 2")
       points(output_data$Channel_2, col="blue")
     }
-    
-    
   
     dev.off()
+    
+    
+    write.csv(output_data, "processed.csv")
     
      
   } else {
