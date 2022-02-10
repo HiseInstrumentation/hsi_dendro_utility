@@ -30,7 +30,9 @@ if(length(args) == 0) {
 
   
   source_filename = args[1]
-  output_filename = "output.csv"
+  
+  output_filename = "processed.csv"
+  
   
   if(file.exists(source_filename)) {
     current_diff_ch1 = 0
@@ -74,7 +76,12 @@ if(length(args) == 0) {
       if((d_data[i,5] - last_d_2) > jump_threshold) {
         current_diff_ch2 = current_diff_ch2 + (d_data[i,5] - last_d_2)
       }
+
+      if((last_d_2 - d_data[i,5]) > jump_threshold) {
+        current_diff_ch2 = current_diff_ch2 - (last_d_2 - d_data[i,5])
+      }
       
+            
       new_value_1 = d_data[i, 4] - current_diff_ch1
       new_value_2 = d_data[i, 5] - current_diff_ch2
       
