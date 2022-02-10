@@ -17,13 +17,15 @@
 # Should be run from parent directory
 args <- commandArgs(trailingOnly = TRUE)
 jump_threshold = 50
+channels = "1"
 
 if(length(args) == 0) {
-  print("Usage\nRscript dbh_remove_jumps.r source_data_file.csv jump_threshold")
+  message("Usage\nRscript dbh_remove_jumps.r source_data_file.csv jump_threshold channels\n\tsource_data_file.csv should be standard HSI dendrometer datafile\n\tjump_threshold is the min jump value to trigger the correction\n\tchannels should be 1,2 or 12\n")
 } else {
-  if(length(args) == 2) {
-    jump_threshold = strtoi(args[2])
-  }
+  jump_threshold = strtoi(args[2])
+  channels = args[3]
+
+  
   source_filename = args[1]
   output_filename = "output.csv"
   
@@ -37,6 +39,13 @@ if(length(args) == 0) {
     message(paste("Source File: ", source_filename))
     message(paste("Output File: ", output_filename))
     message(paste("Jump Threshold: ", jump_threshold))
+    if(channels == "1") {
+      message("Processing Channel 1")
+    } else if (channels == "12") {
+      message("Processing Channel 1 and 2")
+    } else {
+      message("Processing Channel 2")
+    }
     
     output_data <- d_data
     
@@ -61,8 +70,14 @@ if(length(args) == 0) {
       new_value_1 = d_data[i, 4] - current_diff_ch1
       new_value_2 = d_data[i, 5] - current_diff_ch2
       
-      print(paste(d_data[i, 4], ":",current_diff_ch1, new_value_1))
-      print(paste(d_data[i, 5], ":",current_diff_ch2, new_value_2))
+      if (channels == "1" || channels == "12") { 
+        message(paste("Converting ",d_data[i, 4]," to ", new_value_1))
+      }
+      
+      if (channels == "2" || channels == "12") {
+        message(paste("Converting ",d_data[i, 5]," to ", new_value_2))
+      }
+      
       
       output_data[i,1] = d_data[i,1]
       output_data[i,2] = d_data[i,2]
@@ -74,10 +89,41 @@ if(length(args) == 0) {
       last_d_2 = d_data[i,5]
       
     }
-    
+
     print(output_data)
+   
     
+    
+    if(channels == "1") {
+      png(filename = "dend_proc_1.png", width = 625, height = 400)
+      
+      plot(d_data$Channel_1, type="l",col="red",
+           main = "Raw Dendrometer Data Ch 1")
+      points(d_data$Channel_1, col="blue")
+      axis(4,col="red",ylim=c(0,max(d_data$Channel_1)), lwd=2)
+      
+      par(new=T)
+      plot(output_data$Channel_1, type="l",col="blue")
+      points(output_data$Channel_1, col="blue")
+      axis(4,col="blue",ylim=c(0,max(output_data$Channel_1)), lwd=2)
+      
+      
+    }
+    
+    if(channels == "2") {
+      png(filename = "dend_proc_2.png", width = 625, height = 400)
+      plot(d_data$Channel_2, type="l",col="red",
+           main = "Raw Dendrometer Data Ch 2")
+      points(output_data$Channel_2, col="blue")
+    }
+    
+    
+  
+    dev.off()
+    
+     
   } else {
     print("File does not exist!")
   }
+  
 }
