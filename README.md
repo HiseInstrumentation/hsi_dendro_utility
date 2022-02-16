@@ -26,3 +26,5 @@ Example
 > Rscript ./dbh_remove_jumps.r data\sample_dendro_data.csv 50 1
 ```
 
+Notes
+This utility was designed to be used with data files from the MiniFieldStation. If you are using a CSV file from another source, please read the comments in the script.

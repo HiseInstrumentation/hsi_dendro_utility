@@ -15,7 +15,20 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # TODO:
-# Ensure falling values are also handled
+# 
+# User Notes:
+# Your column names must be Channel_1 and Channel_2 for raw values
+# You must change the COL definitiions below. The default values work with
+# current Mini Field Station data files.
+# If you want to disable a channel, chnage the value to 0
+# If you only have 1 raw data column, change CHANNEL_2_COL to be the same as
+# CHANNEL_1_COL.
+
+DATETIME_COL = 1
+DEVICE_ID_COL = 2
+BATTERY_COL = 3
+CHANNEL_1_COL = 4
+CHANNEL_2_COL = 5
 
 # Should be run from parent directory
 args <- commandArgs(trailingOnly = TRUE)
@@ -27,12 +40,9 @@ if(length(args) == 0) {
 } else {
   jump_threshold = strtoi(args[2])
   channels = args[3]
-
-  
   source_filename = args[1]
   
   output_filename = "processed.csv"
-  
   
   if(file.exists(source_filename)) {
     current_diff_ch1 = 0
@@ -44,6 +54,7 @@ if(length(args) == 0) {
     message(paste("Source File: ", source_filename))
     message(paste("Output File: ", output_filename))
     message(paste("Jump Threshold: ", jump_threshold))
+    
     if(channels == "1") {
       message("Processing Channel 1")
     } else if (channels == "12") {
@@ -60,48 +71,58 @@ if(length(args) == 0) {
     # Loop through data
     for(i in 1:nrow(d_data)) {
       if(i == 1) {
-        last_d_1 = d_data[i,4]
-        last_d_2 = d_data[i,5]
+        last_d_1 = d_data[i,CHANNEL_1_COL]
+        last_d_2 = d_data[i,CHANNEL_2_COL]
       }
       
-      if((d_data[i,4] - last_d_1) > jump_threshold) {
-        current_diff_ch1 = current_diff_ch1 + (d_data[i,4] - last_d_1)
+      if((d_data[i,CHANNEL_1_COL] - last_d_1) > jump_threshold) {
+        current_diff_ch1 = current_diff_ch1 + (d_data[i,CHANNEL_1_COL] - last_d_1)
       }
       
-      if((last_d_1 - d_data[i,4]) > jump_threshold) {
-        current_diff_ch1 = current_diff_ch1 - (last_d_1 - d_data[i,4])
+      if((last_d_1 - d_data[i,CHANNEL_1_COL]) > jump_threshold) {
+        current_diff_ch1 = current_diff_ch1 - (last_d_1 - d_data[i,CHANNEL_1_COL])
       }
 
 
-      if((d_data[i,5] - last_d_2) > jump_threshold) {
-        current_diff_ch2 = current_diff_ch2 + (d_data[i,5] - last_d_2)
+      if((d_data[i,CHANNEL_2_COL] - last_d_2) > jump_threshold) {
+        current_diff_ch2 = current_diff_ch2 + (d_data[i,CHANNEL_2_COL] - last_d_2)
       }
 
-      if((last_d_2 - d_data[i,5]) > jump_threshold) {
-        current_diff_ch2 = current_diff_ch2 - (last_d_2 - d_data[i,5])
+      if((last_d_2 - d_data[i,CHANNEL_2_COL]) > jump_threshold) {
+        current_diff_ch2 = current_diff_ch2 - (last_d_2 - d_data[i,CHANNEL_2_COL])
       }
       
             
-      new_value_1 = d_data[i, 4] - current_diff_ch1
-      new_value_2 = d_data[i, 5] - current_diff_ch2
+      new_value_1 = d_data[i, CHANNEL_1_COL] - current_diff_ch1
+      new_value_2 = d_data[i, CHANNEL_2_COL] - current_diff_ch2
       
       if (channels == "1" || channels == "12") { 
-        message(paste("Converting ",d_data[i, 4]," to ", new_value_1))
+        message(paste("Converting ",d_data[i, CHANNEL_1_COL]," to ", new_value_1))
       }
       
       if (channels == "2" || channels == "12") {
-        message(paste("Converting ",d_data[i, 5]," to ", new_value_2))
+        message(paste("Converting ",d_data[i, CHANNEL_2_COL]," to ", new_value_2))
+      }
+          
+      if(DATETIME_COL > 0) {
+        output_data[i,DATETIME_COL] = d_data[i,DATETIME_COL]
+      }
+    
+      if(DEVICE_ID_COL > 0) {
+        output_data[i,DEVICE_ID_COL] = d_data[i,DEVICE_ID_COL]
+      }
+      if(BATTERY_COL > 0) {
+        output_data[i,BATTERY_COL] = d_data[i,BATTERY_COL]
       }
       
-      
-      output_data[i,1] = d_data[i,1]
-      output_data[i,2] = d_data[i,2]
-      output_data[i,3] = d_data[i,3]
-      output_data[i,4] = new_value_1
-      output_data[i,5] = new_value_2
-      
-      last_d_1 = d_data[i,4]
-      last_d_2 = d_data[i,5]
+      if(CHANNEL_1_COL > 0) { 
+        output_data[i,CHANNEL_1_COL] = new_value_1
+        last_d_1 = d_data[i,CHANNEL_1_COL]
+      }
+      if(CHANNEL_2_COL > 0) {
+        output_data[i,CHANNEL_2_COL] = new_value_2
+        last_d_2 = d_data[i,CHANNEL_2_COL]
+      }
       
     }
 
